@@ -9,7 +9,13 @@
 Создайте вкладку **Колесо** (или скрипт создаст сам) с первой строкой:
 
 ```
-дата | ФИО | телефон | telegram | id приза | приз | подпись | описание | промокод | тип | сайт
+дата | ФИО | телефон | telegram | telegram_user_id | период | id приза | приз | подпись | описание | промокод | тип | сайт
+```
+
+Лист **Напоминания** (для рассылки 1-го числа) создаётся скриптом:
+
+```
+telegram_user_id | telegram | последний_период | обновлено
 ```
 
 ---
@@ -52,11 +58,55 @@ function getOrCreateWheelSheet() {
   if (!sheet) {
     sheet = ss.insertSheet("Колесо");
     sheet.appendRow([
-      "дата", "ФИО", "телефон", "telegram", "id приза", "приз",
-      "подпись", "описание", "промокод", "тип", "сайт",
+      "дата", "ФИО", "телефон", "telegram", "telegram_user_id", "период",
+      "id приза", "приз", "подпись", "описание", "промокод", "тип", "сайт",
     ]);
   }
   return sheet;
+}
+
+function getOrCreateRemindersSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName("Напоминания");
+  if (!sheet) {
+    sheet = ss.insertSheet("Напоминания");
+    sheet.appendRow([
+      "telegram_user_id", "telegram", "последний_период", "обновлено",
+    ]);
+  }
+  return sheet;
+}
+
+function registerWheelReminder(data) {
+  const userId = String(data.telegramUserId || "").trim();
+  if (!userId) return;
+
+  const sheet = getOrCreateRemindersSheet();
+  const rows = sheet.getDataRange().getValues();
+  const now = new Date().toISOString();
+  const period = data.spinPeriod || "";
+
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === userId) {
+      sheet.getRange(i + 1, 2, 1, 3).setValues([
+        [data.telegram || rows[i][1] || "", period, now],
+      ]);
+      return;
+    }
+  }
+
+  sheet.appendRow([userId, data.telegram || "", period, now]);
+}
+
+function getReminderUserIds() {
+  const sheet = getOrCreateRemindersSheet();
+  const rows = sheet.getDataRange().getValues();
+  const ids = {};
+  for (let i = 1; i < rows.length; i++) {
+    const id = Number(rows[i][0]);
+    if (id) ids[id] = true;
+  }
+  return Object.keys(ids).map(Number);
 }
 
 function appendWheelRow(data) {
@@ -66,6 +116,8 @@ function appendWheelRow(data) {
     data.fullName || "",
     data.phone || "",
     data.telegram || "",
+    data.telegramUserId || "",
+    data.spinPeriod || "",
     data.prizeId || "",
     data.prizeTitle || "",
     data.prizeLabel || "",
@@ -74,6 +126,7 @@ function appendWheelRow(data) {
     data.prizeType || "",
     data.siteUrl || "",
   ]);
+  if (data.telegramUserId) registerWheelReminder(data);
 }
 
 function doPost(e) {
@@ -84,6 +137,20 @@ function doPost(e) {
   }
 
   const data = JSON.parse(e.postData.contents);
+
+  if (data.type === "wheel_export_reminders") {
+    return ContentService.createTextOutput(
+      JSON.stringify({ ok: true, userIds: getReminderUserIds() }),
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (data.type === "wheel_register_reminder") {
+    registerWheelReminder(data);
+    return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(
+      ContentService.MimeType.JSON,
+    );
+  }
+
   if (data.type === "wheel") {
     appendWheelRow(data);
   } else {
@@ -102,11 +169,13 @@ function testWheelAppend() {
     fullName: "Тест Колесо",
     phone: "+79990000000",
     telegram: "@test",
-    prizeId: "diagnostic-free",
-    prizeTitle: "Диагностика бесплатно",
-    prizeLabel: "Диагн.",
-    prizeDescription: "Тестовая строка",
-    siteUrl: "https://example.com",
+    telegramUserId: 123456789,
+    spinPeriod: "2026-05",
+    prizeId: "checklist",
+    prizeTitle: "Чек-лист",
+    prizeLabel: "Чек",
+    prizeDescription: "Тест",
+    siteUrl: "https://fortune-wheel-snowy.vercel.app",
   });
   SpreadsheetApp.flush();
 }

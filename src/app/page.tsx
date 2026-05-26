@@ -7,26 +7,28 @@ import { FortuneWheel } from "@/components/wheel/FortuneWheel";
 import { WheelLeadForm } from "@/components/wheel/WheelLeadForm";
 import { BONUS_PRIZE_ID, isBonusPrize, type WheelPrize } from "@/lib/wheel-prizes";
 import { diagnosticUrl } from "@/lib/site";
+import {
+  clearStoredSpinPeriod,
+  currentSpinPeriod,
+  getSpinAvailability,
+  markSpunThisPeriod,
+} from "@/lib/wheel-period";
+import { useTelegramUserId } from "@/lib/telegram-webapp";
 
 const diagnosticHref = diagnosticUrl();
-const WHEEL_DONE_KEY = "sg-wheel-done";
 const RESET_KEY = process.env.NEXT_PUBLIC_WHEEL_RESET_KEY?.trim() ?? "";
 
-function clearWheelSession(): void {
-  try {
-    sessionStorage.removeItem(WHEEL_DONE_KEY);
-  } catch {
-    /* ignore */
-  }
-}
-
 export default function HomePage() {
+  const telegramUserId = useTelegramUserId();
+  const spinPeriod = useMemo(() => currentSpinPeriod(), []);
+
   const [prize, setPrize] = useState<WheelPrize | null>(null);
   const [canSpin, setCanSpin] = useState(true);
   const [formKey, setFormKey] = useState(0);
   const [bonusRespinUsed, setBonusRespinUsed] = useState(false);
   const [showRespinHint, setShowRespinHint] = useState(false);
   const [resetNotice, setResetNotice] = useState(false);
+  const [newMonthNotice, setNewMonthNotice] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -35,11 +37,12 @@ export default function HomePage() {
     const resetParam = params.get("reset")?.trim() ?? "";
 
     if (RESET_KEY && resetParam === RESET_KEY) {
-      clearWheelSession();
+      clearStoredSpinPeriod();
       setCanSpin(true);
       setPrize(null);
       setBonusRespinUsed(false);
       setShowRespinHint(false);
+      setNewMonthNotice(false);
       setFormKey((k) => k + 1);
       setResetNotice(true);
 
@@ -49,17 +52,16 @@ export default function HomePage() {
       return;
     }
 
-    try {
-      if (sessionStorage.getItem(WHEEL_DONE_KEY) === "1") setCanSpin(false);
-    } catch {
-      /* ignore */
-    }
+    const availability = getSpinAvailability();
+    setCanSpin(availability.canSpin);
+    setNewMonthNotice(availability.newMonthAvailable);
   }, []);
 
   const onResult = useCallback((p: WheelPrize) => {
     setPrize(p);
     setCanSpin(false);
     setShowRespinHint(false);
+    setNewMonthNotice(false);
     setFormKey((k) => k + 1);
   }, []);
 
@@ -73,11 +75,8 @@ export default function HomePage() {
       }
       setCanSpin(false);
       setShowRespinHint(false);
-      try {
-        sessionStorage.setItem(WHEEL_DONE_KEY, "1");
-      } catch {
-        /* ignore */
-      }
+      setNewMonthNotice(false);
+      markSpunThisPeriod();
     },
     [bonusRespinUsed],
   );
@@ -100,12 +99,18 @@ export default function HomePage() {
       </p>
       <h1 className="mb-2 text-center text-2xl font-bold tracking-tight">Колесо фортуны</h1>
       <p className="mb-8 text-center text-sm text-muted-foreground">
-        Крутите один раз и получите подарок от финансового советника Алексея Шаргатова
+        Один спин в месяц — подарок от финансового советника Алексея Шаргатова
       </p>
 
       {resetNotice && (
         <p className="mb-4 rounded-lg border border-emerald-300/50 bg-emerald-50 px-3 py-2 text-center text-xs text-emerald-900">
           Сброс для проверки: можно крутить колесо снова.
+        </p>
+      )}
+
+      {newMonthNotice && canSpin && !prize && (
+        <p className="mb-4 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-center text-sm text-primary">
+          🎡 Новый месяц — снова можно крутить колесо!
         </p>
       )}
 
@@ -135,20 +140,27 @@ export default function HomePage() {
             <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
               {prize.description}
             </p>
-            <WheelLeadForm key={formKey} prize={prize} onSubmitted={onClaimed} />
+            <WheelLeadForm
+              key={formKey}
+              prize={prize}
+              telegramUserId={telegramUserId}
+              spinPeriod={spinPeriod}
+              onSubmitted={onClaimed}
+            />
           </CardContent>
         </Card>
       )}
 
       {!prize && canSpin && (
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          Один основной спин на человека. Сектор «Ещё раз» — книга в подарок и доп. попытка.
+          Один спин в календарный месяц (по Москве). С 1-го числа — снова доступно. Сектор «Ещё
+          раз» — книга и доп. попытка в том же месяце.
         </p>
       )}
 
       {!canSpin && !prize && (
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          Вы уже участвовали. Спасибо!
+          В этом месяце вы уже крутили. Следующая попытка — с 1-го числа нового месяца. Спасибо!
         </p>
       )}
 

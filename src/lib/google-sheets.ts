@@ -4,6 +4,8 @@ export type WheelClaimRow = {
   fullName: string;
   phone: string;
   telegram?: string;
+  telegramUserId?: number;
+  spinPeriod?: string;
   prizeId: string;
   prizeTitle: string;
 };
@@ -73,6 +75,8 @@ export async function appendWheelClaimToGoogleSheet(claim: WheelClaimRow): Promi
     fullName: claim.fullName,
     phone: claim.phone,
     telegram: claim.telegram ?? "",
+    telegramUserId: claim.telegramUserId ?? "",
+    spinPeriod: claim.spinPeriod ?? "",
     prizeId: claim.prizeId,
     prizeTitle: claim.prizeTitle,
     prizeDescription,
@@ -81,4 +85,13 @@ export async function appendWheelClaimToGoogleSheet(claim: WheelClaimRow): Promi
     prizeType: prize?.type ?? "",
     siteUrl,
   });
+
+  if (claim.telegramUserId) {
+    await postToAppsScript(webhookUrl, {
+      type: "wheel_register_reminder",
+      telegramUserId: claim.telegramUserId,
+      telegram: claim.telegram ?? "",
+      spinPeriod: claim.spinPeriod ?? "",
+    });
+  }
 }

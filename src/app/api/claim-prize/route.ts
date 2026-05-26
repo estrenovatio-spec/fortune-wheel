@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { appendWheelClaimToGoogleSheet } from "@/lib/google-sheets";
+import { currentSpinPeriod } from "@/lib/wheel-period";
 
 const bodySchema = z.object({
   prizeId: z.string().min(1).max(64),
@@ -8,6 +9,8 @@ const bodySchema = z.object({
   fullName: z.string().min(1).max(120),
   phone: z.string().min(5).max(32),
   telegram: z.string().max(64).optional(),
+  telegramUserId: z.coerce.number().int().positive().optional(),
+  spinPeriod: z.string().regex(/^\d{4}-\d{2}$/).optional(),
 });
 
 const TELEGRAM_API = "https://api.telegram.org/bot";
@@ -71,6 +74,8 @@ export async function POST(req: Request) {
         fullName: data.fullName,
         phone: data.phone,
         telegram: data.telegram,
+        telegramUserId: data.telegramUserId,
+        spinPeriod: data.spinPeriod ?? currentSpinPeriod(),
         prizeId: data.prizeId,
         prizeTitle: data.prizeTitle,
       });

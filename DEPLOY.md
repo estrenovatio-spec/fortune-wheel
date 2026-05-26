@@ -106,3 +106,29 @@ https://fortune-wheel-snowy.vercel.app/?reset=СЕКРЕТ&prize=checklist
 `prize`: `checklist`, `roadmap`, `retry`, `diagnostics`, `club`, `discount50`, … (id из `wheel-prizes.ts`).
 
 Сохраните ссылку в «Избранное» Telegram — открывайте для теста. Не публикуйте секрет в канале.
+
+---
+
+## Один спин в месяц + напоминание 1-го числа
+
+- Лимит: **1 основной спин в календарный месяц** (часовой пояс **Москва**). С **1-го числа** снова можно крутить.
+- В Mini App при новом месяце — плашка «Новый месяц — снова можно крутить».
+- **Push в Telegram** 1-го числа — если пользователь крутил из Mini App (сохраняется `telegram user id`).
+
+### Vercel Cron (напоминания)
+
+1. **Environment Variables** → `CRON_SECRET` = случайная длинная строка.
+2. Уже должны быть `TELEGRAM_BOT_TOKEN`, `GOOGLE_SHEETS_WEBHOOK_URL`, `NEXT_PUBLIC_SITE_URL`.
+3. **Redeploy** (в `vercel.json` cron: **1-го числа в 09:00 МСК**).
+4. Обновите **Apps Script** в таблице — см. `docs/GOOGLE-SHEETS.md` (лист «Напоминания», типы `wheel_register_reminder`, `wheel_export_reminders`).
+
+Ручной тест cron (после деплоя):
+
+```bash
+curl -H "Authorization: Bearer ВАШ_CRON_SECRET" \
+  "https://fortune-wheel-snowy.vercel.app/api/cron/monthly-wheel-reminder"
+```
+
+Ответ: `{"ok":true,"sent":N,...}`.
+
+**Важно:** уведомления приходят только тем, кто хотя бы раз забрал приз **из Telegram Mini App** (не из обычного браузера без Telegram).

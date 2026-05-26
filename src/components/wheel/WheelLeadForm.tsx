@@ -15,10 +15,12 @@ import { PrizeClaimSuccess } from "@/components/wheel/PrizeClaimSuccess";
 
 type Props = {
   prize: WheelPrize;
+  telegramUserId?: number | null;
+  spinPeriod?: string;
   onSubmitted?: (prize: WheelPrize) => void;
 };
 
-export function WheelLeadForm({ prize, onSubmitted }: Props) {
+export function WheelLeadForm({ prize, telegramUserId, spinPeriod, onSubmitted }: Props) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [telegram, setTelegram] = useState("");
@@ -39,6 +41,8 @@ export function WheelLeadForm({ prize, onSubmitted }: Props) {
           fullName: name.trim(),
           phone: phone.trim(),
           telegram: telegramForSubmit(telegram),
+          ...(telegramUserId ? { telegramUserId } : {}),
+          ...(spinPeriod ? { spinPeriod } : {}),
         }),
       });
       if (!res.ok) throw new Error("submit failed");
