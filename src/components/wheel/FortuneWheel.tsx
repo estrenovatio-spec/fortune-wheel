@@ -41,15 +41,24 @@ type Props = {
   disabled?: boolean;
 };
 
-function getDevForcePrizeId(): string | null {
-  if (process.env.NODE_ENV !== "development") return null;
+function getForcePrizeId(): string | null {
   if (typeof window === "undefined") return null;
-  return new URLSearchParams(window.location.search).get("prize");
+  const params = new URLSearchParams(window.location.search);
+  const prize = params.get("prize")?.trim();
+  if (!prize) return null;
+
+  if (process.env.NODE_ENV === "development") return prize;
+
+  const resetKey = process.env.NEXT_PUBLIC_WHEEL_RESET_KEY?.trim();
+  const resetParam = params.get("reset")?.trim() ?? "";
+  if (resetKey && resetParam === resetKey) return prize;
+
+  return null;
 }
 
 export function FortuneWheel({ onResult, disabled }: Props) {
   const segments = useMemo(() => buildWheelSegments(), []);
-  const forcePrizeId = useMemo(() => getDevForcePrizeId(), []);
+  const forcePrizeId = useMemo(() => getForcePrizeId(), []);
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [landed, setLanded] = useState(false);

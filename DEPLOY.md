@@ -83,3 +83,26 @@ npm run dev
 ## Призы
 
 Редактируйте `src/lib/wheel-prizes.ts` — подписи, веса (`weight`), тексты.
+
+---
+
+## Сброс для проверки (Mini App / Telegram)
+
+1. Vercel → **Environment Variables** → `NEXT_PUBLIC_WHEEL_RESET_KEY` = длинная случайная строка, например `sg-fortuna-7kQm2p`.
+2. **Redeploy**.
+
+Ссылка (подставьте свой домен и секрет):
+
+```text
+https://fortune-wheel-snowy.vercel.app/?reset=sg-fortuna-7kQm2p
+```
+
+Чтобы сразу выпал нужный приз:
+
+```text
+https://fortune-wheel-snowy.vercel.app/?reset=СЕКРЕТ&prize=checklist
+```
+
+`prize`: `checklist`, `roadmap`, `retry`, `diagnostics`, `club`, `discount50`, … (id из `wheel-prizes.ts`).
+
+Сохраните ссылку в «Избранное» Telegram — открывайте для теста. Не публикуйте секрет в канале.

@@ -10,6 +10,15 @@ import { diagnosticUrl } from "@/lib/site";
 
 const diagnosticHref = diagnosticUrl();
 const WHEEL_DONE_KEY = "sg-wheel-done";
+const RESET_KEY = process.env.NEXT_PUBLIC_WHEEL_RESET_KEY?.trim() ?? "";
+
+function clearWheelSession(): void {
+  try {
+    sessionStorage.removeItem(WHEEL_DONE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
 
 export default function HomePage() {
   const [prize, setPrize] = useState<WheelPrize | null>(null);
@@ -17,8 +26,29 @@ export default function HomePage() {
   const [formKey, setFormKey] = useState(0);
   const [bonusRespinUsed, setBonusRespinUsed] = useState(false);
   const [showRespinHint, setShowRespinHint] = useState(false);
+  const [resetNotice, setResetNotice] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const resetParam = params.get("reset")?.trim() ?? "";
+
+    if (RESET_KEY && resetParam === RESET_KEY) {
+      clearWheelSession();
+      setCanSpin(true);
+      setPrize(null);
+      setBonusRespinUsed(false);
+      setShowRespinHint(false);
+      setFormKey((k) => k + 1);
+      setResetNotice(true);
+
+      params.delete("reset");
+      const q = params.toString();
+      window.history.replaceState({}, "", `${window.location.pathname}${q ? `?${q}` : ""}`);
+      return;
+    }
+
     try {
       if (sessionStorage.getItem(WHEEL_DONE_KEY) === "1") setCanSpin(false);
     } catch {
@@ -53,9 +83,14 @@ export default function HomePage() {
   );
 
   const devForcePrize = useMemo(() => {
-    if (process.env.NODE_ENV !== "development") return null;
     if (typeof window === "undefined") return null;
-    return new URLSearchParams(window.location.search).get("prize");
+    const params = new URLSearchParams(window.location.search);
+    const prize = params.get("prize")?.trim();
+    if (!prize) return null;
+    if (process.env.NODE_ENV === "development") return prize;
+    const resetParam = params.get("reset")?.trim() ?? "";
+    if (RESET_KEY && resetParam === RESET_KEY) return prize;
+    return null;
   }, []);
 
   return (
@@ -68,9 +103,15 @@ export default function HomePage() {
         Крутите один раз и получите подарок от финансового советника Алексея Шаргатова
       </p>
 
+      {resetNotice && (
+        <p className="mb-4 rounded-lg border border-emerald-300/50 bg-emerald-50 px-3 py-2 text-center text-xs text-emerald-900">
+          Сброс для проверки: можно крутить колесо снова.
+        </p>
+      )}
+
       {devForcePrize && (
         <p className="mb-4 rounded-lg border border-amber-300/50 bg-amber-50 px-3 py-2 text-center text-xs text-amber-900">
-          Режим проверки: всегда выпадет <strong>{devForcePrize}</strong> (только локально).
+          Режим проверки: всегда выпадет <strong>{devForcePrize}</strong>.
           {devForcePrize === BONUS_PRIZE_ID && " После заявки — ещё один спин."}
         </p>
       )}
