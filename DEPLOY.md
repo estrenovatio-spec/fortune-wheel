@@ -141,3 +141,49 @@ curl -sS -H "Authorization: Bearer ВАШ_CRON_SECRET" \
 Ответ: `{"ok":true,"sent":N,...}`.
 
 **Важно:** уведомления приходят только тем, кто хотя бы раз забрал приз **из Telegram Mini App** (не из обычного браузера без Telegram).
+
+---
+
+## Верификация бота для публикации Mini App (`/appss_verify`)
+
+Платформа проверяет **автоответ бота** на команду, а не ручную отправку через curl.
+
+### 1. Vercel → Environment Variables
+
+| Переменная | Значение |
+|------------|----------|
+| `TELEGRAM_BOT_TOKEN` | токен @Fortuna_Fin_Bot |
+| `TELEGRAM_APPSS_VERIFY_CODE` | код из формы, напр. `appss_b1506c` |
+
+→ **Redeploy** (дождитесь Ready).
+
+### 2. Подключить webhook (один раз)
+
+Подставьте **токен** бота:
+
+```bash
+curl -s "https://api.telegram.org/botВАШ_ТОКЕН/setWebhook" \
+  -d "url=https://fortune-wheel-snowy.vercel.app/api/telegram/webhook"
+```
+
+Ответ: `{"ok":true,"result":true,...}`.
+
+Проверка:
+
+```bash
+curl -s "https://api.telegram.org/botВАШ_ТОКЕН/getWebhookInfo"
+```
+
+В `url` должно быть `.../api/telegram/webhook`, `last_error_message` — пусто.
+
+### 3. Проверка в Telegram
+
+1. Откройте [@Fortuna_Fin_Bot](https://t.me/Fortuna_Fin_Bot) → **Start**
+2. Отправьте: `/appss_verify`
+3. Бот должен **сразу** ответить: `appss_b1506c` (или ваш код из env)
+
+### 4. На платформе публикации
+
+Нажмите **«Проверить»** — должно пройти.
+
+Если код на платформе **новый** — обновите `TELEGRAM_APPSS_VERIFY_CODE` на Vercel → Redeploy → снова `/appss_verify`.
