@@ -13,7 +13,12 @@ type TgUpdate = {
   message?: TgMessage;
 };
 
-async function sendTelegramReply(chatId: number, text: string, token: string): Promise<void> {
+function isAppssVerifyCommand(text: string): boolean {
+  const first = text.trim().split(/\s+/)[0]?.toLowerCase() ?? "";
+  return first === "/appss_verify" || first.startsWith("/appss_verify@");
+}
+
+async function sendTelegramReply(chatId: number, text: string, token: string): Promise<boolean> {
   const res = await fetch(`${TELEGRAM_API}${token}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -21,21 +26,19 @@ async function sendTelegramReply(chatId: number, text: string, token: string): P
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    console.error("telegram webhook sendMessage:", res.status, body.slice(0, 200));
+    console.error("telegram webhook sendMessage:", res.status, body.slice(0, 300));
+    return false;
   }
+  return true;
 }
 
 /** Webhook Telegram — ответ на /appss_verify для публикации Mini App */
 export async function POST(req: Request) {
-  const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
-  if (!token) {
-    return NextResponse.json({ error: "missing TELEGRAM_BOT_TOKEN" }, { status: 500 });
-  }
-
   const secret = process.env.TELEGRAM_WEBHOOK_SECRET?.trim();
   if (secret) {
     const header = req.headers.get("x-telegram-bot-api-secret-token");
     if (header !== secret) {
+      console.error("telegram webhook: forbidden — проверьте TELEGRAM_WEBHOOK_SECRET или удалите переменную");
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
   }
@@ -44,28 +47,43 @@ export async function POST(req: Request) {
   try {
     update = (await req.json()) as TgUpdate;
   } catch {
-    return NextResponse.json({ error: "invalid json" }, { status: 400 });
+    return NextResponse.json({ ok: true });
   }
 
   const message = update.message;
   const text = message?.text?.trim();
-  if (!message || !text) {
+  if (!message?.chat?.id || !text) {
     return NextResponse.json({ ok: true });
   }
 
-  const command = text.split(/\s/)[0]?.toLowerCase();
-  if (command === "/appss_verify" || command.startsWith("/appss_verify@")) {
-    const code =
-      process.env.TELEGRAM_APPSS_VERIFY_CODE?.trim() || "appss_b1506c";
-    await sendTelegramReply(message.chat.id, code, token);
+  if (!isAppssVerifyCommand(text)) {
+    return NextResponse.json({ ok: true });
   }
+
+  const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  if (!token) {
+    console.error("telegram webhook: TELEGRAM_BOT_TOKEN не задан на Vercel");
+    return NextResponse.json({ ok: true, warning: "no token" });
+  }
+
+  const code = process.env.TELEGRAM_APPSS_VERIFY_CODE?.trim() || "appss_b1506c";
+  console.log("telegram webhook: /appss_verify from chat", message.chat.id);
+  await sendTelegramReply(message.chat.id, code, token);
 
   return NextResponse.json({ ok: true });
 }
 
 export async function GET() {
+  const hasToken = Boolean(process.env.TELEGRAM_BOT_TOKEN?.trim());
+  const hasSecret = Boolean(process.env.TELEGRAM_WEBHOOK_SECRET?.trim());
+  const site = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://fortune-wheel-snowy.vercel.app";
   return NextResponse.json({
     ok: true,
-    hint: "POST webhook for Telegram Bot API",
+    webhookUrl: `${site}/api/telegram/webhook`,
+    hasToken,
+    hasWebhookSecret: hasSecret,
+    hint: hasSecret
+      ? "TELEGRAM_WEBHOOK_SECRET задан — setWebhook должен передавать secret_token"
+      : "Вызовите /api/telegram/setup-webhook с CRON_SECRET",
   });
 }

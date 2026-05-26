@@ -159,14 +159,24 @@ curl -sS -H "Authorization: Bearer ВАШ_CRON_SECRET" \
 
 ### 2. Подключить webhook (один раз)
 
-Подставьте **токен** бота:
+**Способ А — автоматически** (если на Vercel уже есть `CRON_SECRET` и `TELEGRAM_BOT_TOKEN`):
+
+```bash
+curl -sS -H "Authorization: Bearer ВАШ_CRON_SECRET" \
+  "https://fortune-wheel-snowy.vercel.app/api/telegram/setup-webhook"
+```
+
+В ответе `setWebhook.ok` и `webhookInfo.result.url` = ваш webhook. Если `last_error_message` не пустой — пришлите текст.
+
+**Способ Б — вручную:**
 
 ```bash
 curl -s "https://api.telegram.org/botВАШ_ТОКЕН/setWebhook" \
-  -d "url=https://fortune-wheel-snowy.vercel.app/api/telegram/webhook"
+  -d "url=https://fortune-wheel-snowy.vercel.app/api/telegram/webhook" \
+  -d "drop_pending_updates=true"
 ```
 
-Ответ: `{"ok":true,"result":true,...}`.
+**Если задан `TELEGRAM_WEBHOOK_SECRET` на Vercel** — удалите его **или** при setWebhook добавьте тот же `secret_token`, иначе Telegram получит 403 и бот молчит.
 
 Проверка:
 
