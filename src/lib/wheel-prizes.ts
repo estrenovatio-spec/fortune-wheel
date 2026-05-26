@@ -16,6 +16,8 @@ export type WheelPrize = {
   promoCode?: string;
   /** Ссылка «написать в личку» в Telegram */
   telegramDmUrl?: string;
+  /** Ссылка на файл/страницу сразу после заявки */
+  claimHref?: string;
   isRetry?: boolean;
 };
 
@@ -30,6 +32,7 @@ export const WHEEL_PRIZES: WheelPrize[] = [
     weight: 25,
     color: "#3d5c6e",
     type: "content",
+    claimHref: "https://disk.yandex.ru/i/oR3ul86Sh5vVrw",
   },
   {
     id: "roadmap",
@@ -41,6 +44,8 @@ export const WHEEL_PRIZES: WheelPrize[] = [
     weight: 20,
     color: "#6e4a3d",
     type: "content",
+    claimHref:
+      "https://steep-enthusiasm-b41.notion.site/8c05abe6a9364549a890d73f497216f9",
   },
   {
     id: "voicebudget",
@@ -134,6 +139,7 @@ export const WHEEL_PRIZES: WheelPrize[] = [
     weight: 2,
     color: "#6b7280",
     type: "content",
+    claimHref: "https://disk.yandex.ru/i/RkxPqAAAJfXeDA",
   },
 ];
 

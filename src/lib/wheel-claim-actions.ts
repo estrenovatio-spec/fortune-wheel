@@ -7,20 +7,36 @@ export type ClaimAction = {
 
 const BOOKING_DEFAULT = "https://calendar.app.google/K75gRupshpSXMmLTA";
 const CLUB_DEFAULT = "https://t.me/+Wp8JXEa6wUVlMWZi";
-const BOOK_DEFAULT = "https://disk.yandex.ru/i/RkxPqAAAJfXeDA";
+
+function hrefFromEnvOrPrize(
+  envValue: string | undefined,
+  prize: WheelPrize,
+): string | null {
+  const fromEnv = envValue?.trim();
+  if (fromEnv) return fromEnv;
+  const fromPrize = prize.claimHref?.trim();
+  return fromPrize || null;
+}
 
 /** Ссылки на облако / запись — показываются сразу после отправки контактов */
 export function getClaimActions(prize: WheelPrize): ClaimAction[] {
   const actions: ClaimAction[] = [];
 
   if (prize.id === "checklist") {
-    const url = process.env.NEXT_PUBLIC_RESOURCE_CHECKLIST_URL?.trim();
-    if (url) actions.push({ label: "📋 Скачать чек-лист «5 вопросов»", href: url });
+    const url = hrefFromEnvOrPrize(
+      process.env.NEXT_PUBLIC_RESOURCE_CHECKLIST_URL,
+      prize,
+    );
+    if (url) {
+      actions.push({ label: "📋 Скачать чек-лист «5 вопросов»", href: url });
+    }
   }
 
   if (prize.id === "roadmap") {
-    const url = process.env.NEXT_PUBLIC_RESOURCE_ROADMAP_URL?.trim();
-    if (url) actions.push({ label: "🧩 Открыть конструктор целей", href: url });
+    const url = hrefFromEnvOrPrize(process.env.NEXT_PUBLIC_RESOURCE_ROADMAP_URL, prize);
+    if (url) {
+      actions.push({ label: "🧩 Открыть конструктор целей", href: url });
+    }
   }
 
   if (prize.id === "diagnostics") {
@@ -48,18 +64,19 @@ export function getClaimActions(prize: WheelPrize): ClaimAction[] {
   }
 
   if (prize.id === "retry") {
-    const url = process.env.NEXT_PUBLIC_RESOURCE_BOOK_URL?.trim() || BOOK_DEFAULT;
-    actions.push({
-      label: "📚 Книга «Самый богатый человек в Вавилоне» (скачать)",
-      href: url,
-    });
+    const url = hrefFromEnvOrPrize(process.env.NEXT_PUBLIC_RESOURCE_BOOK_URL, prize);
+    if (url) {
+      actions.push({
+        label: "📚 Книга «Самый богатый человек в Вавилоне» (скачать)",
+        href: url,
+      });
+    }
   }
 
   return actions;
 }
 
 export function getClaimFootnote(prize: WheelPrize): string | null {
-  // Есть ссылка на приз — без лишнего текста
   if (getClaimActions(prize).length > 0) return null;
   if (prize.promoCode) return null;
 

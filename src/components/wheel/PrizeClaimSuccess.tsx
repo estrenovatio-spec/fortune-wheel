@@ -11,8 +11,6 @@ type Props = {
 export function PrizeClaimSuccess({ prize }: Props) {
   const actions = getClaimActions(prize);
   const footnote = getClaimFootnote(prize);
-  const missingCloud =
-    (prize.id === "checklist" || prize.id === "roadmap") && actions.length === 0;
   const hasTelegramDm = Boolean(prize.telegramDmUrl);
   const hint =
     prize.promoCode && hasTelegramDm
@@ -24,12 +22,6 @@ export function PrizeClaimSuccess({ prize }: Props) {
   return (
     <div className="space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
       <p className="text-center text-sm font-medium text-primary">Заявка принята</p>
-
-      {missingCloud && (
-        <p className="text-center text-xs text-muted-foreground">
-          Ссылка на файл скоро появится здесь. Пока пришлём материал на указанный контакт.
-        </p>
-      )}
 
       {actions.length > 0 ? (
         <div className="space-y-2">

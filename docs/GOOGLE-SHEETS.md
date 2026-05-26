@@ -130,5 +130,50 @@ function testWheelAppend() {
 
 ## Проверка
 
-1. В Apps Script выберите **`testWheelAppend`** → ▶ Выполнить.
-2. На сайте: выиграйте приз → заполните форму → строка на листе **Колесо**.
+1. В Apps Script выберите **`testWheelAppend`** → ▶ Выполнить — на листе **Колесо** должна появиться тестовая строка.
+2. На сайте: выиграйте приз → **Забрать приз** → строка на **Колесо**.
+
+---
+
+## Не записался контакт — чеклист
+
+### 1. Переменная на том же проекте, где крутите колесо
+
+| Где тестируете | Куда добавить `GOOGLE_SHEETS_WEBHOOK_URL` |
+|----------------|-------------------------------------------|
+| Локально `localhost:3001` | `fortune-wheel/.env.local` (раскомментируйте строку, URL `/exec`) |
+| Vercel | Проект **fortune-wheel** → Settings → Environment Variables → **Redeploy** |
+
+Переменная только в **sg-diagnostic** на колесо **не** действует — нужен отдельный деплой fortune-wheel.
+
+### 2. Скрипт с веткой `wheel`
+
+В `doPost` обязательно:
+
+```javascript
+if (data.type === "wheel") {
+  appendWheelRow(data);
+} else {
+  appendLeadRow(data);
+}
+```
+
+Если вставили старый код без `wheel`, строки уходят не на лист **Колесо** или с пустыми колонками.
+
+После правки кода: **Развернуть → Управление развёртываниями → Новая версия** и обновите URL в Vercel, если URL изменился.
+
+### 3. Логи Vercel
+
+Deployments → последний деплой → **Functions** / **Logs** → ищите `Google Sheets sync failed` или `GOOGLE_SHEETS_WEBHOOK_URL не задан`.
+
+### 4. Быстрый тест webhook из терминала
+
+Подставьте свой URL `/exec`:
+
+```bash
+curl -sS -L -X POST "https://script.google.com/macros/s/ВАШ_ID/exec" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"wheel","createdAt":"2026-01-01T12:00:00.000Z","fullName":"Тест curl","phone":"+79991234567","telegram":"@test","prizeId":"checklist","prizeTitle":"Чек-лист","prizeLabel":"Чек","prizeDescription":"","promoCode":"","prizeType":"content","siteUrl":"https://example.com"}'
+```
+
+Ответ должен быть `{"ok":true}`, в таблице — новая строка на **Колесо**.

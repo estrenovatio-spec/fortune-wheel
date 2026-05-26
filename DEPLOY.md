@@ -42,6 +42,13 @@ git push -u origin main
 | `TELEGRAM_BOT_TOKEN` | Тот же бот, что у диагностики (или отдельный) |
 | `TELEGRAM_ADMIN_CHAT_ID` | Ваш chat id для уведомлений |
 | `GOOGLE_SHEETS_WEBHOOK_URL` | URL Apps Script — заявки на лист **Колесо** (см. `docs/GOOGLE-SHEETS.md`) |
+| `NEXT_PUBLIC_RESOURCE_CHECKLIST_URL` | PDF чек-листа (Яндекс.Диск) — **обязательно для кнопки после приза** |
+| `NEXT_PUBLIC_RESOURCE_ROADMAP_URL` | Notion «Конструктор целей» |
+| `NEXT_PUBLIC_RESOURCE_BOOK_URL` | PDF книги (сектор «Ещё раз») |
+| `NEXT_PUBLIC_BOOKING_URL` | Запись на диагностику |
+| `NEXT_PUBLIC_CLUB_TELEGRAM_URL` | Ссылка в клуб |
+
+Переменные `NEXT_PUBLIC_*` подставляются **при сборке**. После добавления или изменения — **Redeploy**.
 
 Скопируйте из `.env.example`. **Deploy**.
 
