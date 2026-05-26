@@ -122,10 +122,19 @@ https://fortune-wheel-snowy.vercel.app/?reset=СЕКРЕТ&prize=checklist
 3. **Redeploy** (в `vercel.json` cron: **1-го числа в 09:00 МСК**).
 4. Обновите **Apps Script** в таблице — см. `docs/GOOGLE-SHEETS.md` (лист «Напоминания», типы `wheel_register_reminder`, `wheel_export_reminders`).
 
-Ручной тест cron (после деплоя):
+**Тест напоминания только вам** (не ждать 1-го числа):
 
 ```bash
-curl -H "Authorization: Bearer ВАШ_CRON_SECRET" \
+curl -sS -H "Authorization: Bearer ВАШ_CRON_SECRET" \
+  "https://fortune-wheel-snowy.vercel.app/api/cron/monthly-wheel-reminder?test=admin"
+```
+
+В Telegram — сообщение с пометкой «ТЕСТ». Сначала один раз заберите приз **из Mini App**, чтобы ваш id попал в лист «Напоминания».
+
+Полная рассылка всем (без `?test=admin`):
+
+```bash
+curl -sS -H "Authorization: Bearer ВАШ_CRON_SECRET" \
   "https://fortune-wheel-snowy.vercel.app/api/cron/monthly-wheel-reminder"
 ```
 

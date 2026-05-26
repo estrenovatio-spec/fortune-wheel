@@ -11,15 +11,23 @@ const SIZE = 380;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
 const R = SIZE / 2 - 22;
+const HUB_R = 36;
+
+/** Середина кольца сектора (между ступицей и ободом) */
+function segmentLabelRadius(outerR: number, sectorDeg: number): number {
+  const band = outerR - HUB_R;
+  const t = sectorDeg < 12 ? 0.5 : sectorDeg < 24 ? 0.52 : 0.55;
+  return HUB_R + band * t;
+}
 
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
 }
 
-/** Подпись вдоль сектора (+90°), на нижней половине — переворот для читаемости */
+/** Подпись по биссектрисе сектора, читается с внешней стороны колеса */
 function labelRotationDeg(mid: number): number {
-  let angle = mid + 90;
+  let angle = mid;
   if (mid > 90 && mid < 270) angle += 180;
   return angle;
 }
@@ -182,7 +190,7 @@ export function FortuneWheel({ onResult, disabled }: Props) {
               {segments.map((seg) => {
                 const end = seg.startDeg + seg.sizeDeg;
                 const mid = seg.centerDeg;
-                const labelRadius = seg.sizeDeg < 12 ? R * 0.78 : R * 0.72;
+                const labelRadius = segmentLabelRadius(R, seg.sizeDeg);
                 const labelPos = polarToCartesian(CX, CY, labelRadius, mid);
                 const segmentLabel = labelForSegment(seg.prize, seg.sizeDeg);
                 const fontSize =
@@ -202,7 +210,8 @@ export function FortuneWheel({ onResult, disabled }: Props) {
                       fontSize={fontSize}
                       fontWeight={700}
                       textAnchor="middle"
-                      dominantBaseline="middle"
+                      dominantBaseline="central"
+                      alignmentBaseline="middle"
                       transform={`rotate(${labelRotationDeg(mid)}, ${labelPos.x}, ${labelPos.y})`}
                       style={{
                         paintOrder: "stroke fill",
@@ -224,7 +233,7 @@ export function FortuneWheel({ onResult, disabled }: Props) {
                 stroke="rgba(255,248,231,0.15)"
                 strokeWidth={1}
               />
-              <circle cx={CX} cy={CY} r={36} fill="url(#hub-grad)" stroke="hsl(222 47% 18%)" strokeWidth={3} />
+              <circle cx={CX} cy={CY} r={HUB_R} fill="url(#hub-grad)" stroke="hsl(222 47% 18%)" strokeWidth={3} />
               <circle cx={CX} cy={CY} r={30} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth={1} />
               <text
                 x={CX}

@@ -41,9 +41,15 @@ async function fetchReminderUserIds(webhookUrl: string): Promise<number[]> {
   return data.userIds.filter((id) => Number.isFinite(id) && id > 0);
 }
 
-async function sendReminder(chatId: number, token: string, siteUrl: string): Promise<boolean> {
+async function sendReminder(
+  chatId: number,
+  token: string,
+  siteUrl: string,
+  isTest = false,
+): Promise<boolean> {
   const period = currentSpinPeriod();
   const text = [
+    isTest ? "🧪 <b>ТЕСТ — так придёт напоминание 1-го числа</b>\n" : "",
     "🎡 <b>Колесо фортуны — новый месяц!</b>",
     "",
     "С 1-го числа снова доступен один спин с подарком.",
@@ -79,10 +85,32 @@ export async function GET(req: Request) {
   const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL?.trim();
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://fortune-wheel-snowy.vercel.app";
+  const testAdmin = new URL(req.url).searchParams.get("test") === "admin";
 
-  if (!token || !webhookUrl) {
+  if (!token) {
+    return NextResponse.json({ error: "missing TELEGRAM_BOT_TOKEN" }, { status: 500 });
+  }
+
+  if (testAdmin) {
+    const adminRaw = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim();
+    const adminId = adminRaw ? Number(adminRaw) : NaN;
+    if (!Number.isFinite(adminId)) {
+      return NextResponse.json({ error: "missing TELEGRAM_ADMIN_CHAT_ID" }, { status: 500 });
+    }
+    const ok = await sendReminder(adminId, token, siteUrl, true);
+    return NextResponse.json({
+      ok,
+      mode: "test_admin",
+      chatId: adminId,
+      message: ok
+        ? "Тестовое сообщение отправлено в ваш Telegram"
+        : "Не удалось отправить — проверьте токен и chat id, нажмите Start у бота",
+    });
+  }
+
+  if (!webhookUrl) {
     return NextResponse.json(
-      { error: "missing TELEGRAM_BOT_TOKEN or GOOGLE_SHEETS_WEBHOOK_URL" },
+      { error: "missing GOOGLE_SHEETS_WEBHOOK_URL" },
       { status: 500 },
     );
   }
