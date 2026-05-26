@@ -25,9 +25,9 @@ function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
 }
 
-/** Подпись по биссектрисе сектора, читается с внешней стороны колеса */
+/** Подпись вдоль сектора (+90°), по центру дуги; низ колеса — переворот */
 function labelRotationDeg(mid: number): number {
-  let angle = mid;
+  let angle = mid + 90;
   if (mid > 90 && mid < 270) angle += 180;
   return angle;
 }

@@ -69,6 +69,10 @@ export async function POST(req: Request) {
     const data = bodySchema.parse(json);
     await notifyTelegram(data.prizeTitle, data.fullName, data.phone, data.telegram);
 
+    if (!data.telegramUserId) {
+      console.warn("claim-prize: нет telegramUserId — откройте колесо из Mini App @Fortuna_Fin_Bot");
+    }
+
     try {
       await appendWheelClaimToGoogleSheet({
         fullName: data.fullName,

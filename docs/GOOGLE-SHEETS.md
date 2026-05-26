@@ -162,6 +162,20 @@ function doPost(e) {
   );
 }
 
+/** ▶ Один раз, если лист «Колесо» старый без колонок id/период */
+function migrateWheelColumns() {
+  const sheet = getOrCreateWheelSheet();
+  const header = sheet.getRange(1, 1, 1, Math.max(1, sheet.getLastColumn())).getValues()[0];
+  if (header[4] === "telegram_user_id") {
+    Logger.log("Колонки уже есть");
+    return;
+  }
+  sheet.insertColumnsAfter(4, 2);
+  sheet.getRange(1, 5).setValue("telegram_user_id");
+  sheet.getRange(1, 6).setValue("период");
+  Logger.log("Добавлены колонки telegram_user_id и период");
+}
+
 /** ▶ Выполнить для проверки листа «Колесо» */
 function testWheelAppend() {
   appendWheelRow({
@@ -201,6 +215,14 @@ function testWheelAppend() {
 
 1. В Apps Script выберите **`testWheelAppend`** → ▶ Выполнить — на листе **Колесо** должна появиться тестовая строка.
 2. На сайте: выиграйте приз → **Забрать приз** → строка на **Колесо**.
+
+### Нет `telegram_user_id` в таблице
+
+1. **Обновите Apps Script** — вставьте полный код из этого файла (блок выше) → **Развернуть → новая версия**.
+2. На листе **Колесо** в **1-й строке** должны быть колонки `telegram_user_id` и `период` (если лист старый — добавьте вручную после `telegram` или удалите лист «Колесо», скрипт создаст заново).
+3. Заявку отправляйте **из Mini App** (кнопка в @Fortuna_Fin_Bot), не из Safari/Chrome напрямую — иначе id нет.
+4. После деплоя сайта: сброс `?reset=СЕКРЕТ` → снова крутить из бота → **Забрать приз**.
+5. Лист **Напоминания** — там же должен появиться ваш числовой id.
 
 ---
 

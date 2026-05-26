@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import {
   phoneDigitsCount,
   telegramForSubmit,
 } from "@/lib/input-format";
+import { getTelegramUserId, getTelegramUsername } from "@/lib/telegram-webapp";
 import { PrizeClaimSuccess } from "@/components/wheel/PrizeClaimSuccess";
 
 type Props = {
@@ -26,12 +27,18 @@ export function WheelLeadForm({ prize, telegramUserId, spinPeriod, onSubmitted }
   const [telegram, setTelegram] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
 
+  useEffect(() => {
+    const fromTg = getTelegramUsername();
+    if (fromTg) setTelegram((prev) => (prev && prev !== "@" ? prev : fromTg));
+  }, []);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || phoneDigitsCount(phone) < 11) return;
     setStatus("loading");
 
     try {
+      const resolvedUserId = telegramUserId ?? getTelegramUserId();
       const res = await fetch("/api/claim-prize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -40,8 +47,8 @@ export function WheelLeadForm({ prize, telegramUserId, spinPeriod, onSubmitted }
           prizeTitle: prize.title,
           fullName: name.trim(),
           phone: phone.trim(),
-          telegram: telegramForSubmit(telegram),
-          ...(telegramUserId ? { telegramUserId } : {}),
+          telegram: telegramForSubmit(telegram) ?? getTelegramUsername() ?? undefined,
+          ...(resolvedUserId ? { telegramUserId: resolvedUserId } : {}),
           ...(spinPeriod ? { spinPeriod } : {}),
         }),
       });

@@ -53,3 +53,13 @@ curl -sS -H "Authorization: Bearer ВАШ_CRON_SECRET" \
 - `TELEGRAM_ADMIN_CHAT_ID` — **число** из @userinfobot, не @username.
 - `TELEGRAM_BOT_TOKEN` — от Fortuna_Fin_Bot.
 - На Vercel задан `CRON_SECRET`, был **Redeploy**.
+
+### Тест пришёл, но в таблице нет id
+
+Тест `?test=admin` шлёт сообщение **на ваш admin chat id** — это не то же самое, что запись в таблицу.
+
+Чтобы id появился в Google Sheets:
+
+1. Обновите **Apps Script** (см. `GOOGLE-SHEETS.md`, колонки `telegram_user_id`, лист «Напоминания»).
+2. Откройте колесо **только из @Fortuna_Fin_Bot** (кнопка меню).
+3. Заберите приз ещё раз после redeploy сайта.
