@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --primary: 222 47% 18%;
+    --primary-foreground: 45 90% 96%;
+    --secondary: 220 14% 93%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 220 14% 93%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 38 70% 50%;
+    --accent-foreground: 222 47% 11%;
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+    --ring: 222 47% 18%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    background-image: radial-gradient(ellipse at top, hsl(220 30% 96%) 0%, hsl(var(--background)) 55%);
+    min-height: 100vh;
+  }
+}
+
+@keyframes pointer-tick {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(calc(-100% + 22px)) rotate(0deg);
+  }
+  25% {
+    transform: translateX(-50%) translateY(calc(-100% + 22px)) rotate(-6deg);
+  }
+  50% {
+    transform: translateX(-50%) translateY(calc(-100% + 22px)) rotate(4deg);
+  }
+  75% {
+    transform: translateX(-50%) translateY(calc(-100% + 22px)) rotate(-2deg);
+  }
+}
+
+.animate-pointer-tick {
+  animation: pointer-tick 0.55s ease-out;
+}
