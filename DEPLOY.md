@@ -39,8 +39,10 @@ git push -u origin main
 |------------|----------|
 | `NEXT_PUBLIC_SITE_URL` | URL этого проекта после деплоя, напр. `https://fortune-wheel.vercel.app` |
 | `NEXT_PUBLIC_DIAGNOSTIC_URL` | Яндекс-форма анкеты: `https://forms.yandex.ru/u/69f6ffac493639605fd288cd` |
-| `TELEGRAM_BOT_TOKEN` | Тот же бот, что у диагностики (или отдельный) |
-| `TELEGRAM_ADMIN_CHAT_ID` | Ваш chat id для уведомлений |
+| `TELEGRAM_BOT_TOKEN` | Токен **@Fortuna_Fin_Bot** из @BotFather → API Token |
+| `TELEGRAM_ADMIN_CHAT_ID` | Ваш числовой Id (см. ниже), **не** @username |
+
+**Уведомления не приходят:** (1) переменные в проекте **fortune-wheel**, не только sg-diagnostic; (2) в [@Fortuna_Fin_Bot](https://t.me/Fortuna_Fin_Bot) нажмите **Start**; (3) `TELEGRAM_ADMIN_CHAT_ID` — только цифры, например `123456789`; (4) токен и chat id от одного бота; (5) **Redeploy** после изменений.
 | `GOOGLE_SHEETS_WEBHOOK_URL` | URL Apps Script — заявки на лист **Колесо** (см. `docs/GOOGLE-SHEETS.md`) |
 | `NEXT_PUBLIC_RESOURCE_CHECKLIST_URL` | PDF чек-листа (Яндекс.Диск) — **обязательно для кнопки после приза** |
 | `NEXT_PUBLIC_RESOURCE_ROADMAP_URL` | Notion «Конструктор целей» |

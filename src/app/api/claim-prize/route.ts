@@ -18,9 +18,14 @@ async function notifyTelegram(
   phone: string,
   telegram?: string,
 ): Promise<void> {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
-  if (!token || !chatId) return;
+  const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim();
+  if (!token || !chatId) {
+    console.warn(
+      "Telegram: задайте TELEGRAM_BOT_TOKEN и TELEGRAM_ADMIN_CHAT_ID на Vercel (проект fortune-wheel)",
+    );
+    return;
+  }
 
   const lines = [
     "🎡 <b>Колесо фортуны — новый приз</b>",
@@ -34,15 +39,21 @@ async function notifyTelegram(
   const site = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (site) lines.push("", `<b>Сайт:</b> ${escapeHtml(site)}`);
 
-  await fetch(`${TELEGRAM_API}${token}/sendMessage`, {
+  const res = await fetch(`${TELEGRAM_API}${token}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       chat_id: chatId,
       text: lines.join("\n"),
       parse_mode: "HTML",
+      disable_web_page_preview: true,
     }),
   });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error(`Telegram sendMessage failed (${res.status}): ${body.slice(0, 300)}`);
+  }
 }
 
 function escapeHtml(s: string): string {
