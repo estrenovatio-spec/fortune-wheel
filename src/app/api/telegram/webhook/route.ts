@@ -76,10 +76,13 @@ export async function POST(req: Request) {
 export async function GET() {
   const hasToken = Boolean(process.env.TELEGRAM_BOT_TOKEN?.trim());
   const hasSecret = Boolean(process.env.TELEGRAM_WEBHOOK_SECRET?.trim());
-  const site = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://fortune-wheel-snowy.vercel.app";
+  const site =
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    "https://fortune-wheel-snowy.vercel.app";
+  const cleanSite = site.replace(/\/$/, "");
   return NextResponse.json({
     ok: true,
-    webhookUrl: `${site}/api/telegram/webhook`,
+    webhookUrl: `${cleanSite}/api/telegram/webhook`,
     hasToken,
     hasWebhookSecret: hasSecret,
     hint: hasSecret
