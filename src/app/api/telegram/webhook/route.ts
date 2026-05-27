@@ -15,7 +15,11 @@ type TgUpdate = {
 
 function isAppssVerifyCommand(text: string): boolean {
   const first = text.trim().split(/\s+/)[0]?.toLowerCase() ?? "";
-  return first === "/appss_verify" || first.startsWith("/appss_verify@");
+  return (
+    first === "/appss_verify" ||
+    first === "appss_verify" ||
+    first.startsWith("/appss_verify@")
+  );
 }
 
 async function sendTelegramReply(chatId: number, text: string, token: string): Promise<boolean> {
