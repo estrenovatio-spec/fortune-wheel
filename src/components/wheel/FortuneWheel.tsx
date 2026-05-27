@@ -238,14 +238,22 @@ export function FortuneWheel({ onResult, disabled }: Props) {
               <text
                 x={CX}
                 y={CY}
-                fill="hsl(222 47% 14%)"
-                fontSize={13}
-                fontWeight={800}
-                letterSpacing={1}
+                fill="#1f2937"
+                fontSize={14}
+                fontWeight={900}
+                letterSpacing={0.5}
                 textAnchor="middle"
                 dominantBaseline="middle"
+                style={{ paintOrder: "stroke fill" }}
+                stroke="rgba(255,248,231,0.65)"
+                strokeWidth={1}
               >
-                SG
+                <tspan x={CX} dy={-6}>
+                  КРУТИТЬ
+                </tspan>
+                <tspan x={CX} dy={14}>
+                  КОЛЕСО
+                </tspan>
               </text>
             </g>
           </svg>
