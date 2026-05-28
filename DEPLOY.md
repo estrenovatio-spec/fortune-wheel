@@ -49,6 +49,7 @@ git push -u origin main
 | `NEXT_PUBLIC_RESOURCE_BOOK_URL` | PDF книги (сектор «Ещё раз») |
 | `NEXT_PUBLIC_BOOKING_URL` | Запись на диагностику |
 | `NEXT_PUBLIC_CLUB_TELEGRAM_URL` | Ссылка в клуб |
+| `NEXT_PUBLIC_VOICEBUDGET_MINI_APP_URL` | Mini App VoiceBudget, напр. `https://t.me/Fin_BU_Bot` |
 
 Переменные `NEXT_PUBLIC_*` подставляются **при сборке**. После добавления или изменения — **Redeploy**.
 

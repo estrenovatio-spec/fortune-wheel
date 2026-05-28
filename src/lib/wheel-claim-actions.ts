@@ -7,6 +7,7 @@ export type ClaimAction = {
 
 const BOOKING_DEFAULT = "https://calendar.app.google/K75gRupshpSXMmLTA";
 const CLUB_DEFAULT = "https://t.me/+Wp8JXEa6wUVlMWZi";
+const VOICEBUDGET_DEFAULT = "https://t.me/Fin_BU_Bot";
 
 function hrefFromEnvOrPrize(
   envValue: string | undefined,
@@ -56,6 +57,17 @@ export function getClaimActions(prize: WheelPrize): ClaimAction[] {
     });
   }
 
+  if (prize.id === "voicebudget") {
+    const url =
+      process.env.NEXT_PUBLIC_VOICEBUDGET_MINI_APP_URL?.trim() ||
+      prize.claimHref?.trim() ||
+      VOICEBUDGET_DEFAULT;
+    actions.push({
+      label: "🎤 Открыть VoiceBudget (@Fin_BU_Bot)",
+      href: url,
+    });
+  }
+
   if (prize.telegramDmUrl) {
     actions.push({
       label: "💬 Напишите мне в личку СРАЗУ",
@@ -80,8 +92,5 @@ export function getClaimFootnote(prize: WheelPrize): string | null {
   if (getClaimActions(prize).length > 0) return null;
   if (prize.promoCode) return null;
 
-  if (prize.id === "voicebudget") {
-    return "Доступ к VoiceBudget придёт в Telegram в течение 5 минут.";
-  }
   return "Мы свяжемся с вами для активации приза.";
 }

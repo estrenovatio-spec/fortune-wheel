@@ -26,7 +26,8 @@
 | Карта целей | Кнопка → `NEXT_PUBLIC_RESOURCE_ROADMAP_URL` |
 | Диагностика | [Запись в календарь](https://calendar.app.google/K75gRupshpSXMmLTA) |
 | −50% / −30% / −20% | Промокод SPIN50 / SPIN30 / SPIN20 |
-| Голос / Клуб / Вопрос | Текст про Telegram |
+| Голос | Кнопка → [@Fin_BU_Bot](https://t.me/Fin_BU_Bot) Mini App |
+| Клуб / Вопрос | Ссылка в Telegram / личка |
 | Ещё раз | Книга + после заявки ещё один спин |
 
 ## Google Таблица
